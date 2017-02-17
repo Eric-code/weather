@@ -26,6 +26,8 @@ import okhttp3.Response;
 
 public class AutoUpdateService extends Service {
 
+    public static boolean ifupdateweather=true;
+
     @Override
     public IBinder onBind(Intent intent) {
         return null;
@@ -33,7 +35,9 @@ public class AutoUpdateService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        updateWeather();
+        if (ifupdateweather){
+            updateWeather();
+        }
         updateBingPic();
         AlarmManager manager = (AlarmManager) getSystemService(ALARM_SERVICE);
         int anHour = 8 * 60 * 60 * 1000; // 这是8小时的毫秒数
