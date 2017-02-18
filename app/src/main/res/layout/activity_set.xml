@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
     <!--<android.support.v7.widget.RecyclerView
         android:id="@+id/recyclerview_set"
@@ -10,5 +11,24 @@
     <ListView
         android:id="@+id/list_view"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="wrap_content"/>
+    <LinearLayout
+        android:id="@+id/timepickerlayout"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:orientation="horizontal">
+        <TextView
+            android:id="@+id/timepicker"
+            android:text="更新频率(小时/次)："
+            android:textSize="24sp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginLeft="42dp"/>
+
+        <NumberPicker
+            android:id="@+id/updatetimepicker"
+            android:layout_width="match_parent"
+            android:layout_height="80dp"/>
+    </LinearLayout>
 </LinearLayout>
