@@ -193,7 +193,39 @@ public class WeatherActivity extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        Glide.with(WeatherActivity.this).load(bingPic).into(bingPicImg);
+                        if (weatherInfoText.getText().toString().equals("晴")){
+                            bingPicImg.setImageResource(R.drawable.sunny);
+                        } else if (weatherInfoText.getText().toString().equals("多云")){
+                            bingPicImg.setImageResource(R.drawable.duoyun);
+                        }else if (weatherInfoText.getText().toString().equals("阴")){
+                            bingPicImg.setImageResource(R.drawable.yin);
+                        }else if (weatherInfoText.getText().toString().equals("小雨")){
+                            bingPicImg.setImageResource(R.drawable.xiaoyu);
+                        }else if (weatherInfoText.getText().toString().equals("中雨")){
+                            bingPicImg.setImageResource(R.drawable.zhongyu);
+                        }else if (weatherInfoText.getText().toString().equals("大雨")){
+                            bingPicImg.setImageResource(R.drawable.dayu);
+                        }else if (weatherInfoText.getText().toString().equals("雷阵雨")){
+                            bingPicImg.setImageResource(R.drawable.leizhenyu);
+                        }else if (weatherInfoText.getText().toString().equals("暴雨")){
+                            bingPicImg.setImageResource(R.drawable.baoyu);
+                        }else if (weatherInfoText.getText().toString().equals("冻雨")){
+                            bingPicImg.setImageResource(R.drawable.dongyu);
+                        }else if (weatherInfoText.getText().toString().equals("阵雨")){
+                            bingPicImg.setImageResource(R.drawable.zhenyu);
+                        }else if (weatherInfoText.getText().toString().equals("雨夹雪")){
+                            bingPicImg.setImageResource(R.drawable.yujiaxue);
+                        }else if (weatherInfoText.getText().toString().equals("霾")||weatherInfoText.getText().toString().equals("雾")){
+                            bingPicImg.setImageResource(R.drawable.mai);
+                        }else if (weatherInfoText.getText().toString().equals("沙尘暴")) {
+                            bingPicImg.setImageResource(R.drawable.shachenbao);
+                        }else if (weatherInfoText.getText().toString().equals("小雪")) {
+                            bingPicImg.setImageResource(R.drawable.xiaoxue);
+                        }else if (weatherInfoText.getText().toString().equals("大雪")||weatherInfoText.getText().toString().equals("中雪")) {
+                            bingPicImg.setImageResource(R.drawable.daxue);
+                        }else {
+                            Glide.with(WeatherActivity.this).load(bingPic).into(bingPicImg);
+                        }
                     }
                 });
             }
