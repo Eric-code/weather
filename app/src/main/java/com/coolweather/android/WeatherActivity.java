@@ -27,6 +27,7 @@ import com.coolweather.android.util.HttpUtil;
 import com.coolweather.android.util.Utility;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -41,6 +42,8 @@ public class WeatherActivity extends AppCompatActivity {
     private ScrollView weatherLayout;
 
     private Button navButton;
+
+    private Button shareButton;
 
     private Button setButton;
 
@@ -67,6 +70,8 @@ public class WeatherActivity extends AppCompatActivity {
     private ImageView bingPicImg;
 
     private String mWeatherId;
+
+    public String[] datas ={"1"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,6 +100,7 @@ public class WeatherActivity extends AppCompatActivity {
         swipeRefresh.setColorSchemeResources(R.color.colorPrimary);
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         navButton = (Button) findViewById(R.id.nav_button);
+        shareButton = (Button) findViewById(R.id.share_button);
         setButton = (Button) findViewById(R.id.set_button);
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         String weatherString = prefs.getString("weather", null);
@@ -108,6 +114,10 @@ public class WeatherActivity extends AppCompatActivity {
             mWeatherId = getIntent().getStringExtra("weather_id");
             weatherLayout.setVisibility(View.INVISIBLE);
             requestWeather(mWeatherId);
+            String stitleCity=titleCity.getText().toString();
+            String sweatherInfoText=weatherInfoText.getText().toString();
+            String sdegreeText=degreeText.getText().toString();
+            //String stitleCity=titleCity.getText().toString();
         }
         swipeRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -119,6 +129,19 @@ public class WeatherActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 drawerLayout.openDrawer(GravityCompat.START);
+            }
+        });
+        shareButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //Toast.makeText(WeatherActivity.this,"成功分享",Toast.LENGTH_SHORT).show();
+                Intent intent=new Intent(Intent.ACTION_SEND);
+                intent.setType("text/plain");
+                intent.putExtra(Intent.EXTRA_SUBJECT, "Share");
+                intent.putExtra(Intent.EXTRA_TEXT, titleCity.getText().toString()+"今天天气为"+weatherInfoText.getText().toString()+
+                "，最高温度为"+datas[1]+"℃，最低温度为"+datas[2]+"℃");
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(Intent.createChooser(intent, getTitle()));
             }
         });
         setButton.setOnClickListener(new View.OnClickListener() {
@@ -260,6 +283,11 @@ public class WeatherActivity extends AppCompatActivity {
             infoText.setText(forecast.more.info);
             maxText.setText(forecast.temperature.max);
             minText.setText(forecast.temperature.min);
+            String max=maxText.getText().toString();
+            String min=minText.getText().toString();
+            datas= Arrays.copyOf(datas, datas.length+2);
+            datas[datas.length-2]=max;
+            datas[datas.length-1]=min;
             forecastLayout.addView(view);
         }
         if (weather.aqi != null) {

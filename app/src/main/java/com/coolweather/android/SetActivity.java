@@ -26,11 +26,8 @@ import java.util.List;
 
 public class SetActivity extends AppCompatActivity {
     public static Handler revHandler;
-    public static boolean ifupdatepicker=false;
 
     private IntentFilter intentFilter;
-    private LocalReceiver localReceiver;
-    private LocalBroadcastManager localBroadcastManager;
 
     private List<Set> setList=new ArrayList<>();
     @Override
@@ -72,9 +69,6 @@ public class SetActivity extends AppCompatActivity {
             }
         });
 
-        intentFilter=new IntentFilter();
-        intentFilter.addAction("com.coolweather.android.MYUPDATEBROADCAST");
-        localReceiver=new LocalReceiver();
         //localBroadcastManager.registerReceiver(localReceiver,intentFilter);
         // 创建revHandler对象
         revHandler = new Handler()
