@@ -12,6 +12,7 @@ import android.widget.Toast;
 
 import com.coolweather.android.db.City;
 import com.coolweather.android.db.CommonCounty;
+import com.coolweather.android.db.County;
 
 import org.litepal.crud.DataSupport;
 
@@ -35,6 +36,8 @@ public class CityActivity extends AppCompatActivity {
         //获取SetActivity传入的城市名
         Intent intent = getIntent();
         final String cityname1=intent.getStringExtra("cityname1");
+        final String cityid=intent.getStringExtra("city_id");
+        final String provinceid=intent.getStringExtra("province_id");
         //悬浮按钮点击事件
         FloatingActionButton floatingActionButton=(FloatingActionButton)findViewById(R.id.fab);
         floatingActionButton.setOnClickListener(new View.OnClickListener() {
@@ -46,34 +49,38 @@ public class CityActivity extends AppCompatActivity {
                     case 1:
                         CommonCounty first=new CommonCounty();
                         first.setCountyName(cityname1);
-                        first.setCityId("beijing");
-                        first.setProvinceId("zhongguo");
+                        first.setCityId(cityid);
+                        first.setProvinceId(provinceid);
                         first.save();
-                        Log.e(TAG,cityname1);
+                        //Log.e(TAG,cityname1);
                         Set listfirst=new Set(cityname1,R.drawable.set_1,false);
                         setList.add(listfirst);
                         listView.setAdapter(adapter);//将列表显示出来
                         List<CommonCounty> commonCountiesList = DataSupport.findAll(CommonCounty.class);
-                        for (CommonCounty commonCounty1:commonCountiesList){
+                        /*for (CommonCounty commonCounty1:commonCountiesList){
                             Toast.makeText(CityActivity.this,commonCounty1.getCountyName(),Toast.LENGTH_SHORT).show();
-                        }
+                        }*/
 
                         break;
                     case 2:
                         CommonCounty second=new CommonCounty();
                         second.setCountyName(cityname1);
+                        second.setCityId(cityid);
+                        second.setProvinceId(provinceid);
                         second.save();
                         Set listsecond=new Set(cityname1,R.drawable.set_1,false);
                         setList.add(listsecond);
                         listView.setAdapter(adapter);
                         List<CommonCounty> commonCountiesList1 = DataSupport.findAll(CommonCounty.class);
-                        for (CommonCounty commonCounty1:commonCountiesList1){
+                        /*for (CommonCounty commonCounty1:commonCountiesList1){
                             Toast.makeText(CityActivity.this,commonCounty1.getCountyName(),Toast.LENGTH_SHORT).show();
-                        }
+                        }*/
                         break;
                     case 3:
                         CommonCounty third=new CommonCounty();
                         third.setCountyName(cityname1);
+                        third.setCityId(cityid);
+                        third.setProvinceId(provinceid);
                         third.save();
                         Set listthird=new Set(cityname1,R.drawable.set_1,false);
                         setList.add(listthird);
@@ -83,6 +90,8 @@ public class CityActivity extends AppCompatActivity {
                     case 4:
                         CommonCounty fourth=new CommonCounty();
                         fourth.setCountyName(cityname1);
+                        fourth.setCityId(cityid);
+                        fourth.setProvinceId(provinceid);
                         fourth.save();
                         Set listfourth=new Set(cityname1,R.drawable.set_1,false);
                         setList.add(listfourth);
@@ -92,6 +101,8 @@ public class CityActivity extends AppCompatActivity {
                     case 5:
                         CommonCounty fifth=new CommonCounty();
                         fifth.setCountyName(cityname1);
+                        fifth.setCityId(cityid);
+                        fifth.setProvinceId(provinceid);
                         fifth.save();
                         Set listfifth=new Set(cityname1,R.drawable.set_1,false);
                         setList.add(listfifth);
@@ -109,7 +120,19 @@ public class CityActivity extends AppCompatActivity {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-
+                List<CommonCounty> commonCountiesList = DataSupport.findAll(CommonCounty.class);
+                CommonCounty commonCounty=commonCountiesList.get(position);
+                String countyname=commonCounty.getCountyName();
+                List<County> counties=DataSupport.where("countyName=?",countyname).find(County.class);
+                County county=counties.get(0);
+                //Toast.makeText(CityActivity.this,county.getCountyName(),Toast.LENGTH_SHORT).show();
+                String weatherId=county.getWeatherId();
+                Intent intent = new Intent(CityActivity.this, WeatherActivity.class);
+                intent.putExtra("weather_id", weatherId);
+                intent.putExtra("province_id",provinceid);
+                intent.putExtra("city_id",cityid);
+                startActivity(intent);
+                finish();
             }
         });
     }
@@ -118,7 +141,7 @@ public class CityActivity extends AppCompatActivity {
         int i=0;
         for (CommonCounty commonCounty1:commonCountiesList) {
             //String name=commonCountiesList.get(i).toString();
-            Toast.makeText(CityActivity.this,commonCounty1.getCountyName(),Toast.LENGTH_SHORT).show();
+            //Toast.makeText(CityActivity.this,commonCounty1.getCountyName(),Toast.LENGTH_SHORT).show();
             i++;
                 switch (i){
                     case 1:

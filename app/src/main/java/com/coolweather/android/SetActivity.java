@@ -27,6 +27,9 @@ import java.util.List;
 public class SetActivity extends AppCompatActivity {
     public static Handler revHandler;
 
+    private String mCityId;
+    private String mProvinceId;
+
     private List<Set> setList=new ArrayList<>();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +45,8 @@ public class SetActivity extends AppCompatActivity {
         //获取WeatherActivity传入的城市名
         Intent intent = getIntent();
         final String cityname=intent.getStringExtra("cityname");
+        mCityId=intent.getStringExtra("city_id");
+        mProvinceId=intent.getStringExtra("province_id");
 
         NumberPicker numberPicker=(NumberPicker)findViewById(R.id.updatetimepicker);
         int defaulttime=8;
@@ -64,6 +69,8 @@ public class SetActivity extends AppCompatActivity {
                         //Toast.makeText(SetActivity.this,"这是1",Toast.LENGTH_SHORT).show();
                         Intent intent=new Intent(SetActivity.this,CityActivity.class);
                         intent.putExtra("cityname1",cityname);
+                        intent.putExtra("city_id",mCityId);
+                        intent.putExtra("province_id",mProvinceId);
                         startActivity(intent);
                         break;
                     case 1:

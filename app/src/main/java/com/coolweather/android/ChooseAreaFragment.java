@@ -113,6 +113,8 @@ public class ChooseAreaFragment extends Fragment {
                     if (getActivity() instanceof MainActivity) {
                         Intent intent = new Intent(getActivity(), WeatherActivity.class);
                         intent.putExtra("weather_id", weatherId);
+                        intent.putExtra("province_id",String.valueOf(selectedProvince.getProvinceCode()));
+                        intent.putExtra("city_id",String.valueOf(selectedCity.getCityCode()));
                         startActivity(intent);
                         getActivity().finish();
                     } else if (getActivity() instanceof WeatherActivity) {
@@ -206,7 +208,7 @@ public class ChooseAreaFragment extends Fragment {
     /**
      * 根据传入的地址和类型从服务器上查询省市县数据。
      */
-    private void queryFromServer(String address, final String type) {
+    public void queryFromServer(String address, final String type) {
         showProgressDialog();
         HttpUtil.sendOkHttpRequest(address, new Callback() {
             @Override
