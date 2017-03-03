@@ -27,8 +27,6 @@ import java.util.List;
 public class SetActivity extends AppCompatActivity {
     public static Handler revHandler;
 
-    private IntentFilter intentFilter;
-
     private List<Set> setList=new ArrayList<>();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,8 +35,13 @@ public class SetActivity extends AppCompatActivity {
         initSet();
         SetAdapter adapter=new SetAdapter(SetActivity.this,R.layout.set_item,setList);
         ListView listView=(ListView)findViewById(R.id.list_view);
+        //ListView listView1=(ListView)findViewById(R.id.list_view1);
         listView.setAdapter(adapter);
+        //listView1.setAdapter(adapter);
         final LinearLayout linearLayout=(LinearLayout)findViewById(R.id.timepickerlayout);
+        //获取WeatherActivity传入的城市名
+        Intent intent = getIntent();
+        final String cityname=intent.getStringExtra("cityname");
 
         NumberPicker numberPicker=(NumberPicker)findViewById(R.id.updatetimepicker);
         int defaulttime=8;
@@ -58,7 +61,10 @@ public class SetActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 switch (position){
                     case 0:
-                        Toast.makeText(SetActivity.this,"这是1",Toast.LENGTH_SHORT).show();
+                        //Toast.makeText(SetActivity.this,"这是1",Toast.LENGTH_SHORT).show();
+                        Intent intent=new Intent(SetActivity.this,CityActivity.class);
+                        intent.putExtra("cityname1",cityname);
+                        startActivity(intent);
                         break;
                     case 1:
                         Toast.makeText(SetActivity.this,"这是2",Toast.LENGTH_SHORT).show();
@@ -69,7 +75,6 @@ public class SetActivity extends AppCompatActivity {
             }
         });
 
-        //localBroadcastManager.registerReceiver(localReceiver,intentFilter);
         // 创建revHandler对象
         revHandler = new Handler()
         {
@@ -111,20 +116,11 @@ public class SetActivity extends AppCompatActivity {
     }
 
     private void initSet(){
-            Set first=new Set("后台自动更新天气",R.drawable.set);
+            Set first=new Set("对常用城市进行管理",R.drawable.set,false);
             setList.add(first);
-            /*Set second=new Set("设定更新的频率",R.drawable.set);
+            Set second=new Set("后台自动更新天气",R.drawable.set,true);
             setList.add(second);
-            Set third=new Set("不知道写啥，先空着",R.drawable.set);
+            /*Set third=new Set("不知道写啥，先空着",R.drawable.set);
             setList.add(third);*/
-    }
-    /*
-    * 声明一个本地广播接收器
-    * */
-    class LocalReceiver extends BroadcastReceiver{
-        @Override
-        public void onReceive(Context context, Intent intent){
-            Toast.makeText(context,"收到广播",Toast.LENGTH_SHORT).show();
-        }
     }
 }

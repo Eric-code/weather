@@ -41,12 +41,16 @@ public class SetAdapter extends ArrayAdapter<Set> {
         Set set=getItem(position);
         View view=LayoutInflater.from(getContext()).inflate(resourceId,parent,false);
         ImageView setImage=(ImageView)view.findViewById(R.id.set_image);
-        //localBroadcastManager=LocalBroadcastManager.getInstance(getContext());
 
         final TextView setName=(TextView)view.findViewById(R.id.set_name);
         setImage.setImageResource(set.getImageId());
         setName.setText(set.getName());
         final ToggleButton toggleButton=(ToggleButton)view.findViewById(R.id.toggle);
+        if (set.getButtonOn()==true){
+            toggleButton.setVisibility(View.VISIBLE);
+        }else{
+            toggleButton.setVisibility(View.INVISIBLE);
+        }
         toggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
             public void onCheckedChanged(CompoundButton buttonView,
                                          boolean isChecked) {
@@ -54,8 +58,6 @@ public class SetAdapter extends ArrayAdapter<Set> {
                 if (isChecked) {
                     setName.setText("后台自动更新天气");
                     AutoUpdateService.ifupdateweather=true;
-                    /*Intent intent=new Intent("com.coolweather.android.MYUPDATEBROADCAST");
-                    sendBroadcast(intent);*/
                     try
                     {
                         // 当用户按下发送按钮后，将用户输入的数据封装成Message

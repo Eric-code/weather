@@ -114,10 +114,6 @@ public class WeatherActivity extends AppCompatActivity {
             mWeatherId = getIntent().getStringExtra("weather_id");
             weatherLayout.setVisibility(View.INVISIBLE);
             requestWeather(mWeatherId);
-            String stitleCity=titleCity.getText().toString();
-            String sweatherInfoText=weatherInfoText.getText().toString();
-            String sdegreeText=degreeText.getText().toString();
-            //String stitleCity=titleCity.getText().toString();
         }
         swipeRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -148,6 +144,7 @@ public class WeatherActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent setintent=new Intent(WeatherActivity.this,SetActivity.class);
+                setintent.putExtra("cityname",titleCity.getText().toString());
                 startActivity(setintent);
             }
         });

@@ -29,10 +29,10 @@
             <intent-filter>
                 <action android:name="com.coolweather.android.MYUPDATEBROADCAST" />
             </intent-filter>
-
         </receiver>
 
-        <activity android:name=".SetActivity"></activity>
+        <activity android:name=".SetActivity" />
+        <activity android:name=".CityActivity"></activity>
     </application>
 
 </manifest>
