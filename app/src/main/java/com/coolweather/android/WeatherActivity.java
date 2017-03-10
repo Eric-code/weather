@@ -31,6 +31,7 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
 import android.view.animation.LinearInterpolator;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -115,8 +116,9 @@ public class WeatherActivity extends AppCompatActivity{
 
     private ViewGroup dotsGroup = null ;
 
+    private GestureDetector mGestureDetector;
     // 定义手势动作两点之间的最小距离
-    final int FLIP_DISTANCE = 50;
+    final int FLIP_DISTANCE = 200;
     float x1,y1,x2,y2=0;
 
 
@@ -139,6 +141,7 @@ public class WeatherActivity extends AppCompatActivity{
         }
         setContentView(R.layout.activity_weather);
         // 初始化各控件
+        FrameLayout allView=(FrameLayout)findViewById(R.id.allView);
         bingPicImg = (ImageView) findViewById(R.id.bing_pic_img);
         weatherLayout = (ScrollView) findViewById(R.id.weather_layout);
         titleUpdateTime = (TextView) findViewById(R.id.title_update_time);
@@ -158,6 +161,7 @@ public class WeatherActivity extends AppCompatActivity{
         leftButton = (Button)findViewById(R.id.left_button);
         rightButton = (Button)findViewById(R.id.right_button);
         titleCity = (TextView) findViewById(R.id.title_city);
+        //mGestureDetector = new GestureDetector(this,new MyGestureListener());
 
         dotsGroup = ( ViewGroup ) findViewById ( R.id.viewGroup ) ;
         //init_smallDots ( 0, i+1) ;
@@ -191,6 +195,108 @@ public class WeatherActivity extends AppCompatActivity{
         loadBingPic();
         x=titleCity.getTranslationX();
 
+        weatherLayout.setOnTouchListener(new View.OnTouchListener(){
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                int action = event.getAction();
+                Log.e(TAG,"响应发生");
+                if(action == MotionEvent.ACTION_DOWN) {
+                    // 记录点击到ViewPager时候，手指的X坐标
+                    x1 = event.getX();
+                    Log.e(TAG,"x1="+event.getX()+",action="+action);
+                }
+                if(action == MotionEvent.ACTION_MOVE) {
+                    // 超过阈值
+                    Log.e(TAG,"x3="+event.getX());
+                    if(Math.abs(event.getX() - x1) > FLIP_DISTANCE) {
+                        swipeRefresh.setEnabled(false);
+                        weatherLayout.requestDisallowInterceptTouchEvent(true);
+                    }
+                }
+                if(action == MotionEvent.ACTION_UP) {
+                    // 用户抬起手指，恢复父布局状态
+                    x2=event.getX();
+                    Log.e(TAG,"x2="+event.getX());
+                    if((x1 - x2) > FLIP_DISTANCE){
+                        ObjectAnimator animator=ObjectAnimator.ofFloat(titleCity,"translationX",x,-500f);
+                        animator.addListener(new Animator.AnimatorListener() {
+                            @Override
+                            public void onAnimationStart(Animator animator) {
+                            }
+                            @Override
+                            public void onAnimationEnd(Animator animator) {
+                                if (num==i){
+                                    titleCity.setText(counties[num]);
+                                }else {
+                                    num++;
+                                    titleCity.setText(counties[num]);
+                                }
+                                init_smallDots(num,i+1);
+                                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(WeatherActivity.this);
+                                String weatherString = prefs.getString("weather", null);
+                                Weather weather = Utility.handleWeatherResponse(weatherString);
+                                mWeatherId = weather.basic.weatherId;
+                                mWeatherId=titleCity.getText().toString();
+                                requestWeather(mWeatherId);
+                                showWeatherInfo(weather);
+                            }
+                            @Override
+                            public void onAnimationCancel(Animator animator) {
+                            }
+                            @Override
+                            public void onAnimationRepeat(Animator animator) {
+                            }
+                        });
+                        ObjectAnimator animator1=ObjectAnimator.ofFloat(titleCity,"translationX",500f,x);
+                        AnimatorSet animatorSet=new AnimatorSet();
+                        animatorSet.play(animator1).after(animator);
+                        animatorSet.setInterpolator(new LinearInterpolator());
+                        animatorSet.setDuration(250);
+                        animatorSet.start();
+                    }
+                    if((x2 - x1) > FLIP_DISTANCE){
+                        ObjectAnimator animator=ObjectAnimator.ofFloat(titleCity,"translationX",x,500f);
+                        animator.addListener(new Animator.AnimatorListener() {
+                            @Override
+                            public void onAnimationStart(Animator animator) {
+                            }
+                            @Override
+                            public void onAnimationEnd(Animator animator) {
+                                if (num==0){
+                                    titleCity.setText(counties[num]);
+                                }else {
+                                    num--;
+                                    titleCity.setText(counties[num]);
+                                }
+                                init_smallDots(num,i+1);
+                                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(WeatherActivity.this);
+                                String weatherString = prefs.getString("weather", null);
+                                Weather weather = Utility.handleWeatherResponse(weatherString);
+                                mWeatherId = weather.basic.weatherId;
+                                mWeatherId=titleCity.getText().toString();
+                                requestWeather(mWeatherId);
+                                showWeatherInfo(weather);
+                            }
+                            @Override
+                            public void onAnimationCancel(Animator animator) {
+                            }
+                            @Override
+                            public void onAnimationRepeat(Animator animator) {
+                            }
+                        });
+                        ObjectAnimator animator1=ObjectAnimator.ofFloat(titleCity,"translationX",-500f,x);
+                        AnimatorSet animatorSet=new AnimatorSet();
+                        animatorSet.play(animator1).after(animator);
+                        animatorSet.setInterpolator(new LinearInterpolator());
+                        animatorSet.setDuration(250);
+                        animatorSet.start();
+                    }
+                    swipeRefresh.requestDisallowInterceptTouchEvent(false);
+                    weatherLayout.setEnabled(true);
+                }
+                return true;
+            }
+        });
         swipeRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
@@ -290,6 +396,24 @@ public class WeatherActivity extends AppCompatActivity{
             }
         });
     }
+
+   /* @Override
+    public boolean onTouchEvent(MotionEvent event){
+        return mGestureDetector.onTouchEvent(event);
+    }*/
+
+    /*class MyGestureListener extends GestureDetector.SimpleOnGestureListener{
+        @Override
+        public boolean onFling(MotionEvent e1,MotionEvent e2,float velocityX,float velocityY){
+            Log.e(TAG,"响应发生");
+            if((e1.getX()- e2.getX() > FLIP_DISTANCE)&&(Math.abs(e1.getY()-e2.getY())<100)){
+                Toast.makeText(WeatherActivity.this,"向左",Toast.LENGTH_SHORT).show();
+            }else if((e2.getX()- e1.getX() > FLIP_DISTANCE)&&(Math.abs(e1.getY()-e2.getY())<100)){
+                Toast.makeText(WeatherActivity.this,"向右",Toast.LENGTH_SHORT).show();
+            }
+            return true;
+        }
+    }*/
 
     //捕获返回事件
     @Override
