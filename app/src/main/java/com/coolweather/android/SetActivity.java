@@ -123,9 +123,9 @@ public class SetActivity extends AppCompatActivity {
     }
 
     private void initSet(){
-            Set first=new Set("对常用城市进行管理",R.drawable.set,false);
+            Set first=new Set("对常用城市进行管理",false,true);
             setList.add(first);
-            Set second=new Set("后台自动更新天气",R.drawable.set,true);
+            Set second=new Set("后台自动更新天气",true,true);
             setList.add(second);
             /*Set third=new Set("不知道写啥，先空着",R.drawable.set);
             setList.add(third);*/

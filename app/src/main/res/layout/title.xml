@@ -5,13 +5,22 @@
     android:layout_height="?attr/actionBarSize">
 
     <Button
-        android:id="@+id/nav_button"
+    android:id="@+id/nav_button"
+    android:layout_width="30dp"
+    android:layout_height="30dp"
+    android:layout_marginLeft="10dp"
+    android:layout_alignParentLeft="true"
+    android:layout_centerVertical="true"
+    android:background="@drawable/ic_home" />
+
+    <Button
+        android:id="@+id/left_button"
         android:layout_width="30dp"
         android:layout_height="30dp"
-        android:layout_marginLeft="10dp"
+        android:layout_marginLeft="40dp"
         android:layout_alignParentLeft="true"
         android:layout_centerVertical="true"
-        android:background="@drawable/ic_home" />
+        android:background="@drawable/left" />
 
     <TextView
         android:id="@+id/title_city"
@@ -22,13 +31,14 @@
         android:textSize="20sp" />
 
     <Button
-        android:id="@+id/share_button"
+        android:id="@+id/right_button"
         android:layout_width="30dp"
         android:layout_height="30dp"
-        android:layout_marginRight="50dp"
+        android:layout_marginRight="40dp"
         android:layout_alignParentRight="true"
         android:layout_centerVertical="true"
-        android:background="@drawable/ic_share" />
+        android:background="@drawable/right" />
+
     <Button
         android:id="@+id/set_button"
         android:layout_width="30dp"
@@ -36,6 +46,6 @@
         android:layout_marginRight="10dp"
         android:layout_alignParentRight="true"
         android:layout_centerVertical="true"
-        android:background="@drawable/ic_set" />
+        android:background="@drawable/ic_menu" />
 
 </RelativeLayout>

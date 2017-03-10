@@ -3,6 +3,7 @@
     package="com.coolweather.android">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
 
     <application
         android:name="org.litepal.LitePalApplication"
@@ -32,7 +33,7 @@
         </receiver>
 
         <activity android:name=".SetActivity" />
-        <activity android:name=".CityActivity"></activity>
+        <activity android:name=".CityActivity" />
     </application>
 
 </manifest>

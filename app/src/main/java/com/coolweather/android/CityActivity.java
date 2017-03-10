@@ -5,6 +5,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
@@ -23,7 +24,7 @@ public class CityActivity extends AppCompatActivity {
     static int listnum=0;//用来标记listview的数目
     private static final String TAG = "CityActivity";
     private List<Set> setList=new ArrayList<>();
-    private String[] data={"first","second","third","fourth","fifth"};
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -53,7 +54,7 @@ public class CityActivity extends AppCompatActivity {
                         first.setProvinceId(provinceid);
                         first.save();
                         //Log.e(TAG,cityname1);
-                        Set listfirst=new Set(cityname1,R.drawable.set_1,false);
+                        Set listfirst=new Set(cityname1,false,true);
                         setList.add(listfirst);
                         listView.setAdapter(adapter);//将列表显示出来
                         List<CommonCounty> commonCountiesList = DataSupport.findAll(CommonCounty.class);
@@ -68,7 +69,7 @@ public class CityActivity extends AppCompatActivity {
                         second.setCityId(cityid);
                         second.setProvinceId(provinceid);
                         second.save();
-                        Set listsecond=new Set(cityname1,R.drawable.set_1,false);
+                        Set listsecond=new Set(cityname1,false,true);
                         setList.add(listsecond);
                         listView.setAdapter(adapter);
                         List<CommonCounty> commonCountiesList1 = DataSupport.findAll(CommonCounty.class);
@@ -82,7 +83,7 @@ public class CityActivity extends AppCompatActivity {
                         third.setCityId(cityid);
                         third.setProvinceId(provinceid);
                         third.save();
-                        Set listthird=new Set(cityname1,R.drawable.set_1,false);
+                        Set listthird=new Set(cityname1,false,true);
                         setList.add(listthird);
                         listView.setAdapter(adapter);
                         //Toast.makeText(CityActivity.this,third.getId(),Toast.LENGTH_SHORT).show();
@@ -93,7 +94,7 @@ public class CityActivity extends AppCompatActivity {
                         fourth.setCityId(cityid);
                         fourth.setProvinceId(provinceid);
                         fourth.save();
-                        Set listfourth=new Set(cityname1,R.drawable.set_1,false);
+                        Set listfourth=new Set(cityname1,false,true);
                         setList.add(listfourth);
                         listView.setAdapter(adapter);
                         //Toast.makeText(CityActivity.this,fourth.getId(),Toast.LENGTH_SHORT).show();
@@ -104,7 +105,7 @@ public class CityActivity extends AppCompatActivity {
                         fifth.setCityId(cityid);
                         fifth.setProvinceId(provinceid);
                         fifth.save();
-                        Set listfifth=new Set(cityname1,R.drawable.set_1,false);
+                        Set listfifth=new Set(cityname1,false,true);
                         setList.add(listfifth);
                         listView.setAdapter(adapter);
                         //Toast.makeText(CityActivity.this,fifth.getId(),Toast.LENGTH_SHORT).show();
@@ -145,37 +146,28 @@ public class CityActivity extends AppCompatActivity {
             i++;
                 switch (i){
                     case 1:
-                        Set first=new Set(commonCounty1.getCountyName(),R.drawable.set_1,false);
+                        Set first=new Set(commonCounty1.getCountyName(),false,true);
                         setList.add(first);
                         break;
                     case 2:
-                        Set second=new Set(commonCounty1.getCountyName(),R.drawable.set_1,false);
+                        Set second=new Set(commonCounty1.getCountyName(),false,true);
                         setList.add(second);
                         break;
                     case 3:
-                        Set third=new Set(commonCounty1.getCountyName(),R.drawable.set_1,false);
+                        Set third=new Set(commonCounty1.getCountyName(),false,true);
                         setList.add(third);
                         break;
                     case 4:
-                        Set fourth=new Set(commonCounty1.getCountyName(),R.drawable.set_1,false);
+                        Set fourth=new Set(commonCounty1.getCountyName(),false,true);
                         setList.add(fourth);
                         break;
                     case 5:
-                        Set fifth=new Set(commonCounty1.getCountyName(),R.drawable.set_1,false);
+                        Set fifth=new Set(commonCounty1.getCountyName(),false,true);
                         setList.add(fifth);
                         break;
                     default:
                         break;
-
-
             }
-
         }
-
-
-        /*Set second=new Set(WeatherActivity.,R.drawable.set,true);
-        setList.add(second);
-        Set third=new Set("不知道写啥，先空着",R.drawable.set);
-        setList.add(third);*/
     }
 }

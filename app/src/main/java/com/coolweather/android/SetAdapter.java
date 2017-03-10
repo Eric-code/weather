@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.NumberPicker;
@@ -17,6 +18,8 @@ import android.widget.TimePicker;
 import android.widget.ToggleButton;
 
 import com.coolweather.android.service.AutoUpdateService;
+import com.mcxtzhang.swipemenulib.SwipeMenuLayout;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -40,10 +43,17 @@ public class SetAdapter extends ArrayAdapter<Set> {
     public View getView(int position, View convertView,ViewGroup parent){
         Set set=getItem(position);
         View view=LayoutInflater.from(getContext()).inflate(resourceId,parent,false);
-        ImageView setImage=(ImageView)view.findViewById(R.id.set_image);
+        final SwipeMenuLayout swipeMenuLayout=(SwipeMenuLayout)view.findViewById(R.id.swipe_Layout);
+        if (set.getSwipeEnable()==true){
+            swipeMenuLayout.setSwipeEnable(true);
+        }else {
+            swipeMenuLayout.setSwipeEnable(false);
+        }
+
+        //ImageView setImage=(ImageView)view.findViewById(R.id.set_image);
 
         final TextView setName=(TextView)view.findViewById(R.id.set_name);
-        setImage.setImageResource(set.getImageId());
+        //setImage.setImageResource(set.getImageId());
         setName.setText(set.getName());
         final ToggleButton toggleButton=(ToggleButton)view.findViewById(R.id.toggle);
         if (set.getButtonOn()==true){
@@ -89,6 +99,13 @@ public class SetAdapter extends ArrayAdapter<Set> {
                     }
 
                 }
+            }
+        });
+        Button btnDelete=(Button)view.findViewById(R.id.btnDelete);
+        btnDelete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                System.out.println("hehh");
             }
         });
         return view;

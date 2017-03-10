@@ -1,32 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="horizontal"
+<com.mcxtzhang.swipemenulib.SwipeMenuLayout xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    app:ios="false"
+    app:swipeEnable="true"
+    android:id="@+id/swipe_Layout"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="50dp"
+    android:clickable="true"
+    android:paddingBottom="1dp">
 
-    <ImageView
-        android:id="@+id/set_image"
-        android:layout_width="0dp"
-        android:layout_weight="0.6"
-        android:layout_height="50dp"
-        android:layout_gravity="center_vertical"/>
     <TextView
         android:id="@+id/set_name"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="5"
+        android:layout_width="match_parent"
+        android:layout_height="fill_parent"
         android:layout_gravity="center_vertical"
-        android:layout_marginLeft="10dp"
+        android:gravity="center_vertical"
+        android:layout_marginStart="10dp"
+        android:paddingStart="10dp"
         android:textSize="22sp"/>
     <ToggleButton
         android:id="@+id/toggle"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="35dp"
-        android:layout_weight="1.1"
         android:background="#00000000"
         style="@style/MyToggleButton"
         android:checked="true"
         android:textOff=""
         android:textOn=""
         android:layout_gravity="center_vertical"/>
-</LinearLayout>
+    <Button
+        android:id="@+id/btnDelete"
+        android:layout_width="60dp"
+        android:layout_height="match_parent"
+        android:background="#ff0000"
+        android:text="删除"
+        android:textColor="@android:color/white"/>
+</com.mcxtzhang.swipemenulib.SwipeMenuLayout>

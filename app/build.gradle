@@ -30,4 +30,6 @@ dependencies {
     // 加载和展示图片
     compile 'com.android.support:recyclerview-v7:24.2.0'
     compile 'com.android.support:design:24.2.0'
+    compile 'com.android.support:support-v4:24.2.0'
+    compile 'com.github.mcxtzhang:SwipeDelMenuLayout:V1.2.1'
 }

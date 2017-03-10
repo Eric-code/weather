@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">酷哦天气</string>
+    <string name="item1">常用城市管理</string>
+    <string name="item2">分享天气信息</string>
+    <string name="item3">后台自动更新</string>
 </resources>

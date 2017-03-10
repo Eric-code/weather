@@ -12,22 +12,37 @@
         android:layout_height="wrap_content"
         android:layout_gravity="start"
         android:textColor="#fff"
-        android:textSize="16sp"/>
+        android:textSize="20sp"/>
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" >
 
+    <LinearLayout
+        android:id="@+id/viewGroup"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="40dp"
+        android:gravity="center_horizontal"
+        android:orientation="horizontal" >
+
+    </LinearLayout>
+    </RelativeLayout>
     <TextView
         android:id="@+id/degree_text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="start"
+        android:layout_width="match_parent"
+        android:layout_height="180dp"
+        android:gravity="center|bottom"
         android:textColor="#fff"
-        android:textSize="60sp" />
+        android:textSize="70sp" />
 
     <TextView
         android:id="@+id/weather_info_text"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="start"
+        android:gravity="center_horizontal"
         android:textColor="#fff"
-        android:textSize="20sp" />
+        android:textSize="35sp" />
 
 </LinearLayout>

@@ -1,40 +1,65 @@
 package com.coolweather.android;
 
+import android.animation.Animator;
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.gesture.GestureOverlayView;
 import android.graphics.Color;
+import android.nfc.Tag;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.preference.PreferenceManager;
 import android.support.v4.view.GravityCompat;
+import android.support.v4.view.ViewPager;
+import android.support.v4.view.PagerAdapter;
+import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.PopupMenu;
+import android.util.Log;
+import android.view.GestureDetector;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationSet;
+import android.view.animation.LinearInterpolator;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ViewFlipper;
 
 import com.bumptech.glide.Glide;
+import com.coolweather.android.db.CommonCounty;
 import com.coolweather.android.gson.Forecast;
 import com.coolweather.android.gson.Weather;
 import com.coolweather.android.service.AutoUpdateService;
 import com.coolweather.android.util.HttpUtil;
 import com.coolweather.android.util.Utility;
 
+import org.litepal.crud.DataSupport;
+
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
 
-public class WeatherActivity extends AppCompatActivity {
-
+public class WeatherActivity extends AppCompatActivity{
     public DrawerLayout drawerLayout;
 
     public SwipeRefreshLayout swipeRefresh;
@@ -43,7 +68,9 @@ public class WeatherActivity extends AppCompatActivity {
 
     private Button navButton;
 
-    private Button shareButton;
+    private Button leftButton;
+
+    private Button rightButton;
 
     private Button setButton;
 
@@ -74,13 +101,35 @@ public class WeatherActivity extends AppCompatActivity {
     private String mProvinceId;
 
     public String[] datas ={"1"};
+    public String[] counties ={"海淀"};
 
     private static boolean chaxun=true;
+
+    private static final String TAG = "WeatherActivity";
+
+    private static float x=0;
+    private static int num=0;
+    private int i=0;
+    private String[] data=null;
+
+    private ViewGroup dotsGroup = null ;
+
+    // 定义手势动作两点之间的最小距离
+    final int FLIP_DISTANCE = 50;
+    float x1,y1,x2,y2=0;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         chaxun=true;
+        List<CommonCounty> commonCountiesList = DataSupport.findAll(CommonCounty.class);
+        for (CommonCounty commonCounty:commonCountiesList) {
+            i++;
+            counties= Arrays.copyOf(counties, counties.length+1);
+            counties[counties.length-1]=commonCounty.getCountyName().toString();
+            Log.e(TAG,"i="+i);
+        }
         if (Build.VERSION.SDK_INT >= 21) {
             View decorView = getWindow().getDecorView();
             decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
@@ -88,10 +137,10 @@ public class WeatherActivity extends AppCompatActivity {
             getWindow().setStatusBarColor(Color.TRANSPARENT);
         }
         setContentView(R.layout.activity_weather);
+
         // 初始化各控件
         bingPicImg = (ImageView) findViewById(R.id.bing_pic_img);
         weatherLayout = (ScrollView) findViewById(R.id.weather_layout);
-        titleCity = (TextView) findViewById(R.id.title_city);
         titleUpdateTime = (TextView) findViewById(R.id.title_update_time);
         degreeText = (TextView) findViewById(R.id.degree_text);
         weatherInfoText = (TextView) findViewById(R.id.weather_info_text);
@@ -105,8 +154,15 @@ public class WeatherActivity extends AppCompatActivity {
         swipeRefresh.setColorSchemeResources(R.color.colorPrimary);
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         navButton = (Button) findViewById(R.id.nav_button);
-        shareButton = (Button) findViewById(R.id.share_button);
         setButton = (Button) findViewById(R.id.set_button);
+        leftButton = (Button)findViewById(R.id.left_button);
+        rightButton = (Button)findViewById(R.id.right_button);
+        titleCity = (TextView) findViewById(R.id.title_city);
+        titleCity.setText("海淀");
+
+        dotsGroup = ( ViewGroup ) findViewById ( R.id.viewGroup ) ;
+        init_smallDots ( 0, i+1) ;
+
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         String weatherString = prefs.getString("weather", null);
         /*if (weatherString != null) {
@@ -125,6 +181,7 @@ public class WeatherActivity extends AppCompatActivity {
         requestWeather(mWeatherId);
         showWeatherInfo(weather);
         loadBingPic();
+        x=titleCity.getTranslationX();
 
         swipeRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -138,38 +195,180 @@ public class WeatherActivity extends AppCompatActivity {
                 drawerLayout.openDrawer(GravityCompat.START);
             }
         });
-        shareButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                //Toast.makeText(WeatherActivity.this,"成功分享",Toast.LENGTH_SHORT).show();
-                Intent intent=new Intent(Intent.ACTION_SEND);
-                intent.setType("text/plain");
-                intent.putExtra(Intent.EXTRA_SUBJECT, "Share");
-                intent.putExtra(Intent.EXTRA_TEXT, titleCity.getText().toString()+"今天天气为"+weatherInfoText.getText().toString()+
-                "，最高温度为"+datas[1]+"℃，最低温度为"+datas[2]+"℃");
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(Intent.createChooser(intent, getTitle()));
-            }
-        });
         setButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent setintent=new Intent(WeatherActivity.this,SetActivity.class);
-                setintent.putExtra("cityname",titleCity.getText().toString());
-                setintent.putExtra("city_id",mCityId);
-                setintent.putExtra("province_id",mProvinceId);
-                finish();
-                startActivity(setintent);
+                showPopupMenu(setButton);
             }
         });
-        /*String bingPic = prefs.getString("bing_pic", null);
-        if (bingPic != null) {
-            Glide.with(this).load(bingPic).into(bingPicImg);
-        } else {
-            loadBingPic();
-        }*/
+        leftButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                ObjectAnimator animator=ObjectAnimator.ofFloat(titleCity,"translationX",x,-500f);
+                animator.addListener(new Animator.AnimatorListener() {
+                    @Override
+                    public void onAnimationStart(Animator animator) {
+                    }
+                    @Override
+                    public void onAnimationEnd(Animator animator) {
+                        if (num==0){
+                            titleCity.setText(counties[num]);
+                        }else {
+                            num--;
+                            titleCity.setText(counties[num]);
+                        }
+                        init_smallDots(num,i+1);
+                        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(WeatherActivity.this);
+                        String weatherString = prefs.getString("weather", null);
+                        Weather weather = Utility.handleWeatherResponse(weatherString);
+                        mWeatherId = weather.basic.weatherId;
+                        mWeatherId=titleCity.getText().toString();
+                        requestWeather(mWeatherId);
+                        showWeatherInfo(weather);
+                    }
+                    @Override
+                    public void onAnimationCancel(Animator animator) {
+                    }
+                    @Override
+                    public void onAnimationRepeat(Animator animator) {
+                    }
+                });
+                ObjectAnimator animator1=ObjectAnimator.ofFloat(titleCity,"translationX",500f,x);
+                AnimatorSet animatorSet=new AnimatorSet();
+                animatorSet.play(animator1).after(animator);
+                animatorSet.setInterpolator(new LinearInterpolator());
+                animatorSet.setDuration(250);
+                animatorSet.start();
+            }
+        });
+        rightButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                ObjectAnimator animator=ObjectAnimator.ofFloat(titleCity,"translationX",x,500f);
+                animator.addListener(new Animator.AnimatorListener() {
+                    @Override
+                    public void onAnimationStart(Animator animator) {
+                    }
+                    @Override
+                    public void onAnimationEnd(Animator animator) {
+                        if (num==i){
+                            titleCity.setText(counties[num]);
+                        }else {
+                            num++;
+                            titleCity.setText(counties[num]);
+                        }
+                        init_smallDots(num,i+1);
+                        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(WeatherActivity.this);
+                        String weatherString = prefs.getString("weather", null);
+                        Weather weather = Utility.handleWeatherResponse(weatherString);
+                        mWeatherId = weather.basic.weatherId;
+                        mWeatherId=titleCity.getText().toString();
+                        requestWeather(mWeatherId);
+                        showWeatherInfo(weather);
+                    }
+                    @Override
+                    public void onAnimationCancel(Animator animator) {
+                    }
+                    @Override
+                    public void onAnimationRepeat(Animator animator) {
+                    }
+                });
+                ObjectAnimator animator1=ObjectAnimator.ofFloat(titleCity,"translationX",-500f,x);
+                AnimatorSet animatorSet=new AnimatorSet();
+                animatorSet.play(animator1).after(animator);
+                animatorSet.setInterpolator(new LinearInterpolator());
+                animatorSet.setDuration(250);
+                animatorSet.start();
+            }
+        });
     }
 
+    private void showPopupMenu(View view) {  // View当前PopupMenu显示的相对View的位置
+        PopupMenu popupMenu = new PopupMenu(this, view);
+        // menu布局
+        popupMenu.getMenuInflater().inflate(R.menu.main, popupMenu.getMenu());
+        // menu的item点击事件
+        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                switch (item.getItemId()){
+                    case R.id.action_item1:
+                        Intent intent=new Intent(WeatherActivity.this,CityActivity.class);
+                        intent.putExtra("cityname1",titleCity.getText().toString());
+                        intent.putExtra("city_id",mCityId);
+                        intent.putExtra("province_id",mProvinceId);
+                        startActivity(intent);
+                        break;
+                    case R.id.action_item2:
+                        Intent intent1=new Intent(Intent.ACTION_SEND);
+                        intent1.setType("text/plain");
+                        intent1.putExtra(Intent.EXTRA_SUBJECT, "Share");
+                        intent1.putExtra(Intent.EXTRA_TEXT, titleCity.getText().toString()+"今天天气为"+weatherInfoText.getText().toString()+
+                                "，最高温度为"+datas[1]+"℃，最低温度为"+datas[2]+"℃");
+                        intent1.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        startActivity(Intent.createChooser(intent1, getTitle()));
+                        break;
+                    case R.id.action_item3:
+                        Toast.makeText(getApplicationContext(), item.getTitle(), Toast.LENGTH_SHORT).show();
+                        break;
+                    default:
+                        break;
+                }
+                return false;
+            }  });
+        // PopupMenu关闭事件
+        popupMenu.setOnDismissListener(new PopupMenu.OnDismissListener() {
+            @Override  public void onDismiss(PopupMenu menu) {
+                //Toast.makeText(getApplicationContext(), "关闭PopupMenu", Toast.LENGTH_SHORT).show();
+            }  });
+        popupMenu.show();
+    }
+
+   /* @Override
+    public boolean onTouchEvent(MotionEvent event)
+    {
+        if (event.getAction()==MotionEvent.ACTION_DOWN){
+            x1=event.getX();
+            y1=event.getY();
+        }
+        if (event.getAction()==MotionEvent.ACTION_UP){
+            x2=event.getX();
+            y2=event.getY();
+        }
+        if (((x2-x1)>500)&&((y2-y1)<500)&&((y2-y1)>-500))
+        {
+            titleCity.setText("闵行");
+            Log.e(TAG,"向左");
+        }
+        else if (((x1-x2)>500)&&((y2-y1)<500)&&((y2-y1)>-500))
+        {
+            titleCity.setText("铜陵");
+            Toast.makeText(WeatherActivity.this,"向右",Toast.LENGTH_SHORT).show();
+        }
+        Toast.makeText(WeatherActivity.this,"x2="+x2+" x1="+x1+" y2="+y2+" y1="+y1,Toast.LENGTH_LONG).show();
+        return super.onTouchEvent(event);
+    }*/
+
+
+    private void init_smallDots ( int index, int size ) {
+        dotsGroup.removeAllViews () ;
+        //add small dots
+        for ( int i = 0 ; i < size ; i ++ ) {
+            ImageView dot_image = new ImageView ( getBaseContext() ) ;
+            dot_image.setLayoutParams( new DrawerLayout.LayoutParams( DrawerLayout.LayoutParams.WRAP_CONTENT, DrawerLayout.LayoutParams.WRAP_CONTENT) ) ;
+            dot_image.setPadding ( 10, 0, 10, 0 ) ;
+            if ((i==0)&&(index==0)){
+                dot_image.setImageResource ( R.drawable.address_focus ) ;
+            }else if ((i==0)&&(index!=0)){
+                dot_image.setImageResource ( R.drawable.address ) ;
+            } else if ( (i == index)&&(index!=0) ) { // the picture of selected small dot is different
+                dot_image.setImageResource ( R.drawable.page_indicator_focused ) ;
+            }else{
+                dot_image.setImageResource ( R.drawable.page_indicator) ;
+            }
+            dotsGroup.addView ( dot_image ) ;
+        }
+    }
     /**
      * 根据天气id请求城市天气信息。
      */
@@ -262,13 +461,11 @@ public class WeatherActivity extends AppCompatActivity {
                         }
                     }
                 });
-                while (chaxun){
+                if (chaxun){
                     chaxun=false;
                     requestWeather(mWeatherId);
                 }
-
             }
-
             @Override
             public void onFailure(Call call, IOException e) {
                 e.printStackTrace();
@@ -284,27 +481,39 @@ public class WeatherActivity extends AppCompatActivity {
         String updateTime = "最近更新时间："+weather.basic.update.updateTime.split(" ")[1];
         String degree = weather.now.temperature + "℃";
         String weatherInfo = weather.now.more.info;
-        titleCity.setText(cityName);
+        //titleCity.setText(cityName);
         titleUpdateTime.setText(updateTime);
         degreeText.setText(degree);
         weatherInfoText.setText(weatherInfo);
         forecastLayout.removeAllViews();
+        int n=0;
         for (Forecast forecast : weather.forecastList) {
             View view = LayoutInflater.from(this).inflate(R.layout.forecast_item, forecastLayout, false);
             TextView dateText = (TextView) view.findViewById(R.id.date_text);
             TextView infoText = (TextView) view.findViewById(R.id.info_text);
-            TextView maxText = (TextView) view.findViewById(R.id.max_text);
-            TextView minText = (TextView) view.findViewById(R.id.min_text);
+            TextView max_min_Text = (TextView) view.findViewById(R.id.max_min_tem);
+            TextView maxTem = (TextView) findViewById(R.id.max_tem);
+            TextView minTem = (TextView) findViewById(R.id.min_tem);
+            /*while (n==0){
+                String max=forecast.temperature.max;
+                String min=forecast.temperature.min;
+                Toast.makeText(WeatherActivity.this,"设置",Toast.LENGTH_SHORT).show();
+                Log.e(TAG,"设置");
+                n++;
+            }*/
             dateText.setText(forecast.date);
             infoText.setText(forecast.more.info);
-            maxText.setText(forecast.temperature.max);
-            minText.setText(forecast.temperature.min);
-            String max=maxText.getText().toString();
-            String min=minText.getText().toString();
+            max_min_Text.setText(forecast.temperature.max+"℃～"+forecast.temperature.min+"℃");
+            //minText.setText(forecast.temperature.min+"℃");
+            String tem=max_min_Text.getText().toString();
+            //String min=minText.getText().toString();
             datas= Arrays.copyOf(datas, datas.length+2);
-            datas[datas.length-2]=max;
-            datas[datas.length-1]=min;
+            datas[datas.length-2]=forecast.temperature.max.toString();
+            datas[datas.length-1]=forecast.temperature.min.toString();
             forecastLayout.addView(view);
+            maxTem.setText(datas[1]+"℃");
+            minTem.setText(datas[2]+"℃");
+            Log.e(TAG,datas[1]);
         }
         if (weather.aqi != null) {
             aqiText.setText(weather.aqi.city.aqi);
@@ -320,5 +529,6 @@ public class WeatherActivity extends AppCompatActivity {
         Intent intent = new Intent(this, AutoUpdateService.class);
         startService(intent);
     }
+
 
 }
