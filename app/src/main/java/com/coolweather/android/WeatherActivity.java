@@ -69,9 +69,8 @@ public class WeatherActivity extends AppCompatActivity{
 
     private Button navButton;
 
-    private Button leftButton;
-
-    private Button rightButton;
+    //private Button leftButton;
+    //private Button rightButton;
 
     private Button setButton;
 
@@ -84,6 +83,7 @@ public class WeatherActivity extends AppCompatActivity{
     private TextView weatherInfoText;
 
     private LinearLayout forecastLayout;
+    private LinearLayout touchLayout;
 
     private TextView aqiText;
 
@@ -101,6 +101,7 @@ public class WeatherActivity extends AppCompatActivity{
     private String mCityId;
     private String mProvinceId;
     private String mType;
+    private static String getmWeatherId;
 
     public String[] datas ={"1"};
     public String[] counties ={"海淀"};
@@ -112,26 +113,25 @@ public class WeatherActivity extends AppCompatActivity{
     private static float x=0;
     private static int num=0;
     private int i=0;
-    private String[] data=null;
 
     private ViewGroup dotsGroup = null ;
 
-    private GestureDetector mGestureDetector;
-    // 定义手势动作两点之间的最小距离
-    final int FLIP_DISTANCE = 200;
-    float x1,y1,x2,y2=0;
+    private Weather weather;
 
+    // 定义手势动作两点之间的最小距离
+    final int FLIP_DISTANCE = 100;
+    float x1,y1,x2,y2=0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        chaxun=true;
+        chaxun = true;
         List<CommonCounty> commonCountiesList = DataSupport.findAll(CommonCounty.class);
-        for (CommonCounty commonCounty:commonCountiesList) {
+        for (CommonCounty commonCounty : commonCountiesList) {
             i++;
-            counties= Arrays.copyOf(counties, counties.length+1);
-            counties[counties.length-1]=commonCounty.getCountyName().toString();
-            Log.e(TAG,"i="+i);
+            counties = Arrays.copyOf(counties, counties.length + 1);
+            counties[counties.length - 1] = commonCounty.getCountyName().toString();
+            Log.e(TAG, "i=" + i);
         }
         if (Build.VERSION.SDK_INT >= 21) {
             View decorView = getWindow().getDecorView();
@@ -141,9 +141,9 @@ public class WeatherActivity extends AppCompatActivity{
         }
         setContentView(R.layout.activity_weather);
         // 初始化各控件
-        FrameLayout allView=(FrameLayout)findViewById(R.id.allView);
         bingPicImg = (ImageView) findViewById(R.id.bing_pic_img);
         weatherLayout = (ScrollView) findViewById(R.id.weather_layout);
+        touchLayout = (LinearLayout) findViewById(R.id.touch_layout);
         titleUpdateTime = (TextView) findViewById(R.id.title_update_time);
         degreeText = (TextView) findViewById(R.id.degree_text);
         weatherInfoText = (TextView) findViewById(R.id.weather_info_text);
@@ -158,14 +158,12 @@ public class WeatherActivity extends AppCompatActivity{
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         navButton = (Button) findViewById(R.id.nav_button);
         setButton = (Button) findViewById(R.id.set_button);
-        leftButton = (Button)findViewById(R.id.left_button);
-        rightButton = (Button)findViewById(R.id.right_button);
+        //leftButton = (Button)findViewById(R.id.left_button);
+        //rightButton = (Button)findViewById(R.id.right_button);
         titleCity = (TextView) findViewById(R.id.title_city);
-        //mGestureDetector = new GestureDetector(this,new MyGestureListener());
 
-        dotsGroup = ( ViewGroup ) findViewById ( R.id.viewGroup ) ;
+        dotsGroup = (ViewGroup) findViewById(R.id.viewGroup);
         //init_smallDots ( 0, i+1) ;
-
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         String weatherString = prefs.getString("weather", null);
         /*if (weatherString != null) {
@@ -174,133 +172,131 @@ public class WeatherActivity extends AppCompatActivity{
             mWeatherId = weather.basic.weatherId;
             showWeatherInfo(weather);
         } else {}*/
-            // 无缓存时去服务器查询天气
-        Weather weather = Utility.handleWeatherResponse(weatherString);
+        // 无缓存时去服务器查询天气
+        weather = Utility.handleWeatherResponse(weatherString);
         mWeatherId = weather.basic.weatherId;
+        Log.e(TAG,"mweatherId="+mWeatherId);
         mWeatherId = getIntent().getStringExtra("weather_id");
-        mCityId=getIntent().getStringExtra("city_id");
-        mProvinceId=getIntent().getStringExtra("province_id");
-        mType=getIntent().getStringExtra("type");
-        if (mType.equals("new")){
-            leftButton.setVisibility(View.INVISIBLE);
-            rightButton.setVisibility(View.INVISIBLE);
-            init_smallDots(0,0);
-        }else {
+        getmWeatherId=mWeatherId;
+        mCityId = getIntent().getStringExtra("city_id");
+        mProvinceId = getIntent().getStringExtra("province_id");
+        mType = getIntent().getStringExtra("type");
+        if (mType.equals("new")) {
+            //leftButton.setVisibility(View.INVISIBLE);
+            //rightButton.setVisibility(View.INVISIBLE);
+            init_smallDots(0, 0);
+        } else {
             titleCity.setText("海淀");
-            init_smallDots ( 0, i+1) ;
+            init_smallDots(0, i + 1);
         }
         weatherLayout.setVisibility(View.INVISIBLE);
         requestWeather(mWeatherId);
         showWeatherInfo(weather);
         loadBingPic();
-        x=titleCity.getTranslationX();
+        requestWeather(mWeatherId);
+        Log.e(TAG,"mweatherId="+mWeatherId);
+        x = titleCity.getTranslationX();
 
-        weatherLayout.setOnTouchListener(new View.OnTouchListener(){
+        touchLayout.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                int action = event.getAction();
-                Log.e(TAG,"响应发生");
-                if(action == MotionEvent.ACTION_DOWN) {
-                    // 记录点击到ViewPager时候，手指的X坐标
-                    x1 = event.getX();
-                    Log.e(TAG,"x1="+event.getX()+",action="+action);
+            int action = event.getAction();
+            Log.e(TAG, "响应发生");
+            if (action == MotionEvent.ACTION_DOWN) {
+                // 记录点击到ViewPager时候，手指的X坐标
+                x1 = event.getX();
+                Log.e(TAG, "x1=" + event.getX() + ",action=" + action);
+            }
+            if (action == MotionEvent.ACTION_MOVE) {
+                // 超过阈值
+                Log.e(TAG, "x3=" + event.getX());
+                if (Math.abs(event.getX() - x1) > FLIP_DISTANCE) {
+                    Log.e(TAG, "x3=" + "禁止");
+                    //swipeRefresh.setEnabled(false);
+                    weatherLayout.requestDisallowInterceptTouchEvent(true);
                 }
-                if(action == MotionEvent.ACTION_MOVE) {
-                    // 超过阈值
-                    Log.e(TAG,"x3="+event.getX());
-                    if(Math.abs(event.getX() - x1) > FLIP_DISTANCE) {
-                        swipeRefresh.setEnabled(false);
-                        weatherLayout.requestDisallowInterceptTouchEvent(true);
-                    }
+            }
+            if (action == MotionEvent.ACTION_UP) {
+                // 用户抬起手指，恢复父布局状态
+                x2 = event.getX();
+                Log.e(TAG, "x2=" + event.getX());
+                if ((x1 - x2) > FLIP_DISTANCE) {
+                    ObjectAnimator animator = ObjectAnimator.ofFloat(titleCity, "translationX", x, -500f);
+                    animator.addListener(new Animator.AnimatorListener() {
+                        @Override
+                        public void onAnimationStart(Animator animator) {
+                        }
+                        @Override
+                        public void onAnimationEnd(Animator animator) {
+                            if (num == i) {
+                                titleCity.setText(counties[num]);
+                            } else {
+                                num++;
+                                titleCity.setText(counties[num]);
+                            }
+                            init_smallDots(num, i + 1);
+                            mWeatherId = titleCity.getText().toString();
+                            requestWeather(mWeatherId);
+                        }
+                        @Override
+                        public void onAnimationCancel(Animator animator) {
+                        }
+                        @Override
+                        public void onAnimationRepeat(Animator animator) {
+                        }
+                    });
+                    ObjectAnimator animator1 = ObjectAnimator.ofFloat(titleCity, "translationX", 500f, x);
+                    AnimatorSet animatorSet = new AnimatorSet();
+                    animatorSet.play(animator1).after(animator);
+                    animatorSet.setInterpolator(new LinearInterpolator());
+                    animatorSet.setDuration(250);
+                    animatorSet.start();
                 }
-                if(action == MotionEvent.ACTION_UP) {
-                    // 用户抬起手指，恢复父布局状态
-                    x2=event.getX();
-                    Log.e(TAG,"x2="+event.getX());
-                    if((x1 - x2) > FLIP_DISTANCE){
-                        ObjectAnimator animator=ObjectAnimator.ofFloat(titleCity,"translationX",x,-500f);
-                        animator.addListener(new Animator.AnimatorListener() {
-                            @Override
-                            public void onAnimationStart(Animator animator) {
+                if ((x2 - x1) > FLIP_DISTANCE) {
+                    ObjectAnimator animator = ObjectAnimator.ofFloat(titleCity, "translationX", x, 500f);
+                    animator.addListener(new Animator.AnimatorListener() {
+                        @Override
+                        public void onAnimationStart(Animator animator) {
+                        }
+                        @Override
+                        public void onAnimationEnd(Animator animator) {
+                            if (num == 0) {
+                                titleCity.setText(counties[num]);
+                            } else {
+                                num--;
+                                titleCity.setText(counties[num]);
                             }
-                            @Override
-                            public void onAnimationEnd(Animator animator) {
-                                if (num==i){
-                                    titleCity.setText(counties[num]);
-                                }else {
-                                    num++;
-                                    titleCity.setText(counties[num]);
-                                }
-                                init_smallDots(num,i+1);
-                                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(WeatherActivity.this);
-                                String weatherString = prefs.getString("weather", null);
-                                Weather weather = Utility.handleWeatherResponse(weatherString);
-                                mWeatherId = weather.basic.weatherId;
-                                mWeatherId=titleCity.getText().toString();
-                                requestWeather(mWeatherId);
-                                showWeatherInfo(weather);
-                            }
-                            @Override
-                            public void onAnimationCancel(Animator animator) {
-                            }
-                            @Override
-                            public void onAnimationRepeat(Animator animator) {
-                            }
-                        });
-                        ObjectAnimator animator1=ObjectAnimator.ofFloat(titleCity,"translationX",500f,x);
-                        AnimatorSet animatorSet=new AnimatorSet();
-                        animatorSet.play(animator1).after(animator);
-                        animatorSet.setInterpolator(new LinearInterpolator());
-                        animatorSet.setDuration(250);
-                        animatorSet.start();
-                    }
-                    if((x2 - x1) > FLIP_DISTANCE){
-                        ObjectAnimator animator=ObjectAnimator.ofFloat(titleCity,"translationX",x,500f);
-                        animator.addListener(new Animator.AnimatorListener() {
-                            @Override
-                            public void onAnimationStart(Animator animator) {
-                            }
-                            @Override
-                            public void onAnimationEnd(Animator animator) {
-                                if (num==0){
-                                    titleCity.setText(counties[num]);
-                                }else {
-                                    num--;
-                                    titleCity.setText(counties[num]);
-                                }
-                                init_smallDots(num,i+1);
-                                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(WeatherActivity.this);
-                                String weatherString = prefs.getString("weather", null);
-                                Weather weather = Utility.handleWeatherResponse(weatherString);
-                                mWeatherId = weather.basic.weatherId;
-                                mWeatherId=titleCity.getText().toString();
-                                requestWeather(mWeatherId);
-                                showWeatherInfo(weather);
-                            }
-                            @Override
-                            public void onAnimationCancel(Animator animator) {
-                            }
-                            @Override
-                            public void onAnimationRepeat(Animator animator) {
-                            }
-                        });
-                        ObjectAnimator animator1=ObjectAnimator.ofFloat(titleCity,"translationX",-500f,x);
-                        AnimatorSet animatorSet=new AnimatorSet();
-                        animatorSet.play(animator1).after(animator);
-                        animatorSet.setInterpolator(new LinearInterpolator());
-                        animatorSet.setDuration(250);
-                        animatorSet.start();
-                    }
-                    swipeRefresh.requestDisallowInterceptTouchEvent(false);
-                    weatherLayout.setEnabled(true);
+                            init_smallDots(num, i + 1);
+                            mWeatherId = titleCity.getText().toString();
+                            requestWeather(mWeatherId);
+                        }
+                        @Override
+                        public void onAnimationCancel(Animator animator) {
+                        }
+                        @Override
+                        public void onAnimationRepeat(Animator animator) {
+                        }
+                    });
+                    ObjectAnimator animator1 = ObjectAnimator.ofFloat(titleCity, "translationX", -500f, x);
+                    AnimatorSet animatorSet = new AnimatorSet();
+                    animatorSet.play(animator1).after(animator);
+                    animatorSet.setInterpolator(new LinearInterpolator());
+                    animatorSet.setDuration(250);
+                    animatorSet.start();
                 }
-                return true;
+                swipeRefresh.requestDisallowInterceptTouchEvent(false);
+                weatherLayout.setEnabled(true);
+                Log.e(TAG, "x3=" + "解除禁止");
+                return false;
+            }
+            return true;
             }
         });
         swipeRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
                 requestWeather(mWeatherId);
+                Log.e(TAG,  "刷新进行");
             }
         });
         navButton.setOnClickListener(new View.OnClickListener() {
@@ -315,112 +311,22 @@ public class WeatherActivity extends AppCompatActivity{
                 showPopupMenu(setButton);
             }
         });
-        leftButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                ObjectAnimator animator=ObjectAnimator.ofFloat(titleCity,"translationX",x,-500f);
-                animator.addListener(new Animator.AnimatorListener() {
-                    @Override
-                    public void onAnimationStart(Animator animator) {
-                    }
-                    @Override
-                    public void onAnimationEnd(Animator animator) {
-                        if (num==0){
-                            titleCity.setText(counties[num]);
-                        }else {
-                            num--;
-                            titleCity.setText(counties[num]);
-                        }
-                        init_smallDots(num,i+1);
-                        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(WeatherActivity.this);
-                        String weatherString = prefs.getString("weather", null);
-                        Weather weather = Utility.handleWeatherResponse(weatherString);
-                        mWeatherId = weather.basic.weatherId;
-                        mWeatherId=titleCity.getText().toString();
-                        requestWeather(mWeatherId);
-                        showWeatherInfo(weather);
-                    }
-                    @Override
-                    public void onAnimationCancel(Animator animator) {
-                    }
-                    @Override
-                    public void onAnimationRepeat(Animator animator) {
-                    }
-                });
-                ObjectAnimator animator1=ObjectAnimator.ofFloat(titleCity,"translationX",500f,x);
-                AnimatorSet animatorSet=new AnimatorSet();
-                animatorSet.play(animator1).after(animator);
-                animatorSet.setInterpolator(new LinearInterpolator());
-                animatorSet.setDuration(250);
-                animatorSet.start();
-            }
-        });
-        rightButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                ObjectAnimator animator=ObjectAnimator.ofFloat(titleCity,"translationX",x,500f);
-                animator.addListener(new Animator.AnimatorListener() {
-                    @Override
-                    public void onAnimationStart(Animator animator) {
-                    }
-                    @Override
-                    public void onAnimationEnd(Animator animator) {
-                        if (num==i){
-                            titleCity.setText(counties[num]);
-                        }else {
-                            num++;
-                            titleCity.setText(counties[num]);
-                        }
-                        init_smallDots(num,i+1);
-                        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(WeatherActivity.this);
-                        String weatherString = prefs.getString("weather", null);
-                        Weather weather = Utility.handleWeatherResponse(weatherString);
-                        mWeatherId = weather.basic.weatherId;
-                        mWeatherId=titleCity.getText().toString();
-                        requestWeather(mWeatherId);
-                        showWeatherInfo(weather);
-                    }
-                    @Override
-                    public void onAnimationCancel(Animator animator) {
-                    }
-                    @Override
-                    public void onAnimationRepeat(Animator animator) {
-                    }
-                });
-                ObjectAnimator animator1=ObjectAnimator.ofFloat(titleCity,"translationX",-500f,x);
-                AnimatorSet animatorSet=new AnimatorSet();
-                animatorSet.play(animator1).after(animator);
-                animatorSet.setInterpolator(new LinearInterpolator());
-                animatorSet.setDuration(250);
-                animatorSet.start();
-            }
-        });
     }
 
-   /* @Override
-    public boolean onTouchEvent(MotionEvent event){
-        return mGestureDetector.onTouchEvent(event);
-    }*/
-
-    /*class MyGestureListener extends GestureDetector.SimpleOnGestureListener{
-        @Override
-        public boolean onFling(MotionEvent e1,MotionEvent e2,float velocityX,float velocityY){
-            Log.e(TAG,"响应发生");
-            if((e1.getX()- e2.getX() > FLIP_DISTANCE)&&(Math.abs(e1.getY()-e2.getY())<100)){
-                Toast.makeText(WeatherActivity.this,"向左",Toast.LENGTH_SHORT).show();
-            }else if((e2.getX()- e1.getX() > FLIP_DISTANCE)&&(Math.abs(e1.getY()-e2.getY())<100)){
-                Toast.makeText(WeatherActivity.this,"向右",Toast.LENGTH_SHORT).show();
-            }
-            return true;
-        }
-    }*/
+    protected void onStart(){
+        super.onStart();
+        requestWeather(mWeatherId);
+        loadBingPic();
+    }
 
     //捕获返回事件
     @Override
     public void onBackPressed() {
-        Intent intent2=new Intent(this,MainActivity.class);
-        startActivity(intent2);
-        finish();
+        if (mType.equals("new")){
+            Intent intent2=new Intent(this,MainActivity.class);
+            startActivity(intent2);
+            finish();
+        }
         super.onBackPressed();
     }
 
@@ -465,32 +371,6 @@ public class WeatherActivity extends AppCompatActivity{
         popupMenu.show();
     }
 
-   /* @Override
-    public boolean onTouchEvent(MotionEvent event)
-    {
-        if (event.getAction()==MotionEvent.ACTION_DOWN){
-            x1=event.getX();
-            y1=event.getY();
-        }
-        if (event.getAction()==MotionEvent.ACTION_UP){
-            x2=event.getX();
-            y2=event.getY();
-        }
-        if (((x2-x1)>500)&&((y2-y1)<500)&&((y2-y1)>-500))
-        {
-            titleCity.setText("闵行");
-            Log.e(TAG,"向左");
-        }
-        else if (((x1-x2)>500)&&((y2-y1)<500)&&((y2-y1)>-500))
-        {
-            titleCity.setText("铜陵");
-            Toast.makeText(WeatherActivity.this,"向右",Toast.LENGTH_SHORT).show();
-        }
-        Toast.makeText(WeatherActivity.this,"x2="+x2+" x1="+x1+" y2="+y2+" y1="+y1,Toast.LENGTH_LONG).show();
-        return super.onTouchEvent(event);
-    }*/
-
-
     private void init_smallDots ( int index, int size ) {
         dotsGroup.removeAllViews () ;
         //add small dots
@@ -530,9 +410,38 @@ public class WeatherActivity extends AppCompatActivity{
                             mWeatherId = weather.basic.weatherId;
                             showWeatherInfo(weather);
                         } else {
-                            Toast.makeText(WeatherActivity.this, "获取天气信息失败", Toast.LENGTH_SHORT).show();
+                            //Toast.makeText(WeatherActivity.this, "获取天气信息失败", Toast.LENGTH_SHORT).show();
                         }
                         swipeRefresh.setRefreshing(false);
+                        if (weatherInfoText.getText().toString().equals("晴")){
+                            bingPicImg.setImageResource(R.drawable.sunny);
+                        } else if (weatherInfoText.getText().toString().equals("多云")||weatherInfoText.getText().toString().equals("阴")){
+                            bingPicImg.setImageResource(R.drawable.duoyun);
+                        }else if (weatherInfoText.getText().toString().equals("小雨")){
+                            bingPicImg.setImageResource(R.drawable.xiaoyu);
+                        }else if (weatherInfoText.getText().toString().equals("中雨")){
+                            bingPicImg.setImageResource(R.drawable.zhongyu);
+                        }else if (weatherInfoText.getText().toString().equals("大雨")){
+                            bingPicImg.setImageResource(R.drawable.dayu);
+                        }else if (weatherInfoText.getText().toString().equals("雷阵雨")){
+                            bingPicImg.setImageResource(R.drawable.leizhenyu);
+                        }else if (weatherInfoText.getText().toString().equals("暴雨")){
+                            bingPicImg.setImageResource(R.drawable.baoyu);
+                        }else if (weatherInfoText.getText().toString().equals("冻雨")){
+                            bingPicImg.setImageResource(R.drawable.dongyu);
+                        }else if (weatherInfoText.getText().toString().equals("阵雨")){
+                            bingPicImg.setImageResource(R.drawable.zhenyu);
+                        }else if (weatherInfoText.getText().toString().equals("雨夹雪")){
+                            bingPicImg.setImageResource(R.drawable.yujiaxue);
+                        }else if (weatherInfoText.getText().toString().equals("霾")||weatherInfoText.getText().toString().equals("雾")){
+                            bingPicImg.setImageResource(R.drawable.mai);
+                        }else if (weatherInfoText.getText().toString().equals("沙尘暴")) {
+                            bingPicImg.setImageResource(R.drawable.shachenbao);
+                        }else if (weatherInfoText.getText().toString().equals("小雪")) {
+                            bingPicImg.setImageResource(R.drawable.xiaoxue);
+                        }else if (weatherInfoText.getText().toString().equals("大雪")||weatherInfoText.getText().toString().equals("中雪")) {
+                            bingPicImg.setImageResource(R.drawable.daxue);
+                        }
                     }
                 });
             }
@@ -569,10 +478,8 @@ public class WeatherActivity extends AppCompatActivity{
                     public void run() {
                         if (weatherInfoText.getText().toString().equals("晴")){
                             bingPicImg.setImageResource(R.drawable.sunny);
-                        } else if (weatherInfoText.getText().toString().equals("多云")){
+                        } else if (weatherInfoText.getText().toString().equals("多云")||weatherInfoText.getText().toString().equals("阴")){
                             bingPicImg.setImageResource(R.drawable.duoyun);
-                        }else if (weatherInfoText.getText().toString().equals("阴")){
-                            bingPicImg.setImageResource(R.drawable.yin);
                         }else if (weatherInfoText.getText().toString().equals("小雨")){
                             bingPicImg.setImageResource(R.drawable.xiaoyu);
                         }else if (weatherInfoText.getText().toString().equals("中雨")){
@@ -638,13 +545,6 @@ public class WeatherActivity extends AppCompatActivity{
             TextView max_min_Text = (TextView) view.findViewById(R.id.max_min_tem);
             TextView maxTem = (TextView) findViewById(R.id.max_tem);
             TextView minTem = (TextView) findViewById(R.id.min_tem);
-            /*while (n==0){
-                String max=forecast.temperature.max;
-                String min=forecast.temperature.min;
-                Toast.makeText(WeatherActivity.this,"设置",Toast.LENGTH_SHORT).show();
-                Log.e(TAG,"设置");
-                n++;
-            }*/
             dateText.setText(forecast.date);
             infoText.setText(forecast.more.info);
             max_min_Text.setText(forecast.temperature.max+"℃～"+forecast.temperature.min+"℃");
@@ -657,7 +557,6 @@ public class WeatherActivity extends AppCompatActivity{
             forecastLayout.addView(view);
             maxTem.setText(datas[1]+"℃");
             minTem.setText(datas[2]+"℃");
-            Log.e(TAG,datas[1]);
         }
         if (weather.aqi != null) {
             aqiText.setText(weather.aqi.city.aqi);
@@ -673,6 +572,4 @@ public class WeatherActivity extends AppCompatActivity{
         Intent intent = new Intent(this, AutoUpdateService.class);
         startService(intent);
     }
-
-
 }

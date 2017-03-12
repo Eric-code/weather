@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Message;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +16,7 @@ import android.widget.ImageView;
 import android.widget.NumberPicker;
 import android.widget.TextView;
 import android.widget.TimePicker;
+import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import com.coolweather.android.service.AutoUpdateService;
@@ -32,8 +34,8 @@ import java.util.Timer;
  * Created by hebo on 2017/2/16.
  */
 public class SetAdapter extends ArrayAdapter<Set> {
-
     //public String[] datas = {"是否允许后台自动更新天气","设定更新的频率","不知道写啥，先空着"};
+    private static final String TAG = "SetAdapter";
     private int resourceId;
     public SetAdapter(Context context, int textViewResourceId, List<Set> objects){
         super(context,textViewResourceId,objects);
@@ -102,10 +104,27 @@ public class SetAdapter extends ArrayAdapter<Set> {
             }
         });
         Button btnDelete=(Button)view.findViewById(R.id.btnDelete);
+        btnDelete.setTag(position);
         btnDelete.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                System.out.println("hehh");
+                int position =Integer.parseInt(v.getTag().toString());
+                //Toast.makeText(CityActivity.this, "删除按钮被点击", Toast.LENGTH_SHORT).show();
+                try
+                {
+                    // 当用户按下发送按钮后，将用户输入的数据封装成Message
+                    // 然后发送给子线程的Handler
+                    Message msg = new Message();
+                    Bundle b = new Bundle();
+                    b.putInt("index", position);
+                    msg.setData(b);
+                    msg.what = 0x123;
+                    CityActivity.delHandler.sendMessage(msg);
+                }
+                catch (Exception e)
+                {
+                    e.printStackTrace();
+                }
             }
         });
         return view;

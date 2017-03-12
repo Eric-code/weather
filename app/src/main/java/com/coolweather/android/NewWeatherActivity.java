@@ -261,10 +261,8 @@ public class NewWeatherActivity extends AppCompatActivity{
                     public void run() {
                         if (weatherInfoText.getText().toString().equals("晴")){
                             bingPicImg.setImageResource(R.drawable.sunny);
-                        } else if (weatherInfoText.getText().toString().equals("多云")){
+                        } else if (weatherInfoText.getText().toString().equals("多云")||weatherInfoText.getText().toString().equals("阴")){
                             bingPicImg.setImageResource(R.drawable.duoyun);
-                        }else if (weatherInfoText.getText().toString().equals("阴")){
-                            bingPicImg.setImageResource(R.drawable.yin);
                         }else if (weatherInfoText.getText().toString().equals("小雨")){
                             bingPicImg.setImageResource(R.drawable.xiaoyu);
                         }else if (weatherInfoText.getText().toString().equals("中雨")){
